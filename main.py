@@ -1,5 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request, url_for
 from caesar import encrypt as rotate_string
+import cgi
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -8,15 +9,20 @@ form = """
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Jose Urdaneta</title>
     <style>
+        body {{
+            background-image: url("{cipherimg}");
+        }}
         form {{
             background-color: rgb(85, 132, 141); 
-            /*background-image: url("./images/camouflage.jpg");*/
+            background-image: url("{imgbckgnd}");
             padding: 20px;
             margin: 0 auto;
             width: 540px;
             font: 16px sans-serif;
             border-radius: 10px;
+            opacity: 0.82;
         }}
         p {{
             color: rgb(126, 33, 33);
@@ -36,6 +42,7 @@ form = """
     </style>
 </head>
 <body>
+    <br><br>
     <form method="POST">
         <div>
             <label for="rot">Rotate by:</label>
@@ -51,7 +58,8 @@ form = """
 </body>
 </html>
 """
-
+img = ''
+ciphimg = ''
 
 @app.route("/", methods=['POST'])
 def encrypt():
@@ -62,7 +70,10 @@ def encrypt():
     encrypted_msg = ''
 
     def render():
-        return form.format(rotation=rotation, errormsg1=errormsg1, errormsg2=errormsg2, textmsg=encrypted_msg)
+        nonlocal rotation  # , encrypted_msg
+        rotation = cgi.escape(str(rotation))
+        # encrypted_msg = cgi.escape(encrypted_msg)
+        return form.format(rotation=rotation, errormsg1=errormsg1, errormsg2=errormsg2, textmsg=encrypted_msg, imgbckgnd=img, cipherimg=ciphimg)
 
     if request.method == 'POST':
         try:
@@ -96,7 +107,11 @@ def encrypt():
 
 @app.route("/")
 def index():
-    return form.format(rotation=13, errormsg1='', errormsg2='', textmsg='The crow flies at midnight!')
+    global img, ciphimg
+    img = url_for('static', filename='Camouflage.jpg')
+    ciphimg = url_for('static', filename='cipherbkg2.png')
+    print(img)
+    return form.format(rotation=13, errormsg1='', errormsg2='', textmsg='The crow flies at midnight!', imgbckgnd=img, cipherimg=ciphimg)
 
 # pending, add the background image
 
